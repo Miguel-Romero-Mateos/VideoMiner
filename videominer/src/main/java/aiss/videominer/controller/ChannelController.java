@@ -58,7 +58,7 @@ public class ChannelController {
             @ApiResponse(responseCode = "400", description = "Datos inválidos", content = {@Content(schema = @Schema())})
     })
     @Operation(summary = "Create a Channel", description = "Create a Channel object by its attributes", tags = {"channels", "post"})
-    @PostMapping("/channels)")
+    @PostMapping("/channels")
     @ResponseStatus(HttpStatus.CREATED)
     public Channel createChannel(@Parameter(description = "data of channel to be created") @RequestBody @Valid Channel channel) {
         return channelRepository.save(channel);
