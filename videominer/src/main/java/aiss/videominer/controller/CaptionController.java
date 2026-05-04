@@ -44,13 +44,13 @@ public class CaptionController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Caption obtenido",
                     content = {@Content(schema = @Schema(implementation = Caption.class), mediaType = "application/json")}),
-            @ApiResponse(responseCode = "404", description = "Caption no encontrado")
+            @ApiResponse(responseCode = "404", description = "Caption no encontrado", content = {@Content(schema = @Schema())})
     })
     @Operation(summary = "Retrieve a Caption",
-            description = "Get a Caption object by specifying its Id", tags = {"get", "caption"})
-    @GetMapping("/caption/{captionId}")
+            description = "Get a Caption object by specifying its Id", tags = {"get", "captions"})
+    @GetMapping("/captions/{captionId}")
     public Caption findOne(@Parameter(description = "id from caption to be searched")
-                           @PathVariable(value = "captionId") long captionId) throws CaptionNotFoundException {
+                           @PathVariable(value = "captionId") String captionId) throws CaptionNotFoundException {
         Optional<Caption> caption = captionRepository.findById(captionId);
         if(!caption.isPresent()){
             throw new CaptionNotFoundException();
@@ -67,7 +67,7 @@ public class CaptionController {
             description = "Get a list of all Caption objects from an Video object by specifying its Id", tags = {"get", "videos", "captions"})
     @GetMapping("/videos/{videoId}/captions")
     public List<Caption> getAllCaptionsByVideoId(@Parameter(description = "id from video whose captions needs to be listed")
-                                                 @PathVariable(value = "videoId") long videoId) throws VideoNotFoundException {
+                                                 @PathVariable(value = "videoId") String videoId) throws VideoNotFoundException {
         Optional<Video> video = videoRepository.findById(videoId);
         if(!video.isPresent()){
             throw new VideoNotFoundException();
@@ -86,7 +86,7 @@ public class CaptionController {
     @PostMapping("/videos/{videoId}/captions)")
     @ResponseStatus(HttpStatus.CREATED)
     public Caption createCaption(@Parameter(description = "data of caption to be created") @RequestBody @Valid Caption caption,
-                                 @Parameter(description = "video where the caption will be uploaded") @PathVariable("videoId") long videoId) throws VideoNotFoundException {
+                                 @Parameter(description = "video where the caption will be uploaded") @PathVariable("videoId") String videoId) throws VideoNotFoundException {
         Optional<Video> video = videoRepository.findById(videoId);
         if(!video.isPresent()){
             throw new VideoNotFoundException();
@@ -105,7 +105,7 @@ public class CaptionController {
     @PutMapping("/captions/{captionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateCaption(@Parameter(description = "data of caption to be updated") @RequestBody @Valid Caption caption,
-                            @Parameter(description = "id of caption to be updated") @PathVariable("captionId") long captionId) throws CaptionNotFoundException {
+                            @Parameter(description = "id of caption to be updated") @PathVariable("captionId") String captionId) throws CaptionNotFoundException {
         Optional<Caption> captionData = captionRepository.findById(captionId);
         if(!captionData.isPresent()){
             throw new CaptionNotFoundException();
@@ -123,7 +123,7 @@ public class CaptionController {
     @Operation(summary = "Delete a Caption by Id", description = "Delete a Caption object by specifying its Id", tags = {"captions", "delete"})
     @DeleteMapping("/captions/{captionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCaption(@Parameter(description = "id of caption to be deleted") @PathVariable("captionId") long captionId) {
+    public void deleteCaption(@Parameter(description = "id of caption to be deleted") @PathVariable("captionId") String captionId) {
         if (captionRepository.existsById(captionId)) {
             captionRepository.deleteById(captionId);
         }

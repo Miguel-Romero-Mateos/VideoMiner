@@ -5,5 +5,5 @@ import aiss.videominer.model.Channel;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ChannelRepository extends JpaRepository<Channel,Long> {
+public interface ChannelRepository extends JpaRepository<Channel,String> {
 }

@@ -38,13 +38,14 @@ public class ChannelController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Canal obtenido",
                     content = {@Content(schema = @Schema(implementation = Channel.class), mediaType = "application/json")}),
-            @ApiResponse(responseCode = "404", description = "Canal no encontrado")
+            @ApiResponse(responseCode = "404", description = "Canal no encontrado",
+                    content = {@Content(schema = @Schema())})
     })
     @Operation(summary = "Retrieve a Channel",
-            description = "Get a Channel object by specifying its Id", tags = {"get", "channel"})
+            description = "Get a Channel object by specifying its Id", tags = {"get", "channels"})
     @GetMapping("/channels/{channelId}")
     public Channel findOne(@Parameter(description = "id from channel to be searched")
-                           @PathVariable(value = "channelId") long channelId) throws ChannelNotFoundException {
+                           @PathVariable(value = "channelId") String channelId) throws ChannelNotFoundException {
         Optional<Channel> channel = channelRepository.findById(channelId);
         if(!channel.isPresent()){
             throw new ChannelNotFoundException();
@@ -74,7 +75,7 @@ public class ChannelController {
     @PutMapping("/channels/{channelId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateChannel(@Parameter(description = "data of channel to be updated") @RequestBody @Valid Channel channel,
-                              @Parameter(description = "id of channel to be updated") @PathVariable("channelId") long channelId) throws ChannelNotFoundException {
+                              @Parameter(description = "id of channel to be updated") @PathVariable("channelId") String channelId) throws ChannelNotFoundException {
         Optional<Channel> channelData = channelRepository.findById(channelId);
         if(!channelData.isPresent()){
             throw new ChannelNotFoundException();
@@ -94,7 +95,7 @@ public class ChannelController {
     @Operation(summary = "Delete a Channel by Id", description = "Delete a Channel object by specifying its Id", tags = {"channels", "delete"})
     @DeleteMapping("/channels/{channelId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteChannel(@Parameter(description = "id of channel to be deleted") @PathVariable("channelId") long channelId) {
+    public void deleteChannel(@Parameter(description = "id of channel to be deleted") @PathVariable("channelId") String channelId) {
         if (channelRepository.existsById(channelId)) {
             channelRepository.deleteById(channelId);
         }

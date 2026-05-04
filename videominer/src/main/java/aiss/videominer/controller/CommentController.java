@@ -44,13 +44,13 @@ public class CommentController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Comentario obtenido",
                     content = {@Content(schema = @Schema(implementation = Comment.class), mediaType = "application/json")}),
-            @ApiResponse(responseCode = "404", description = "Comment no encontrado")
+            @ApiResponse(responseCode = "404", description = "Comment no encontrado", content = {@Content(schema = @Schema())})
     })
     @Operation(summary = "Retrieve a Comment",
-            description = "Get a Comment object by specifying its Id", tags = {"get", "comment"})
+            description = "Get a Comment object by specifying its Id", tags = {"get", "comments"})
     @GetMapping("/comments/{commentId}")
     public Comment findOne(@Parameter(description = "id from comment to be searched")
-                           @PathVariable(value = "commentId") long commentId) throws CommentNotFoundException {
+                           @PathVariable(value = "commentId") String commentId) throws CommentNotFoundException {
         Optional<Comment> comment = commentRepository.findById(commentId);
         if(!comment.isPresent()){
             throw new CommentNotFoundException();
@@ -67,7 +67,7 @@ public class CommentController {
             description = "Get a list of all Comments objects from an Video object by specifying its Id", tags = {"get", "videos", "comments"})
     @GetMapping("/videos/{videoId}/comments")
     public List<Comment> getAllCommentsByVideoId(@Parameter(description = "id from video whose comments needs to be listed")
-                                                 @PathVariable(value = "videoId") long videoId) throws VideoNotFoundException {
+                                                 @PathVariable(value = "videoId") String videoId) throws VideoNotFoundException {
         Optional<Video> video = videoRepository.findById(videoId);
         if(!video.isPresent()){
             throw new VideoNotFoundException();
@@ -86,7 +86,7 @@ public class CommentController {
     @PostMapping("/videos/{videoId}/comments)")
     @ResponseStatus(HttpStatus.CREATED)
     public Comment createComment(@Parameter(description = "data of comment to be created") @RequestBody @Valid Comment comment,
-                                 @Parameter(description = "video where the comment will be uploaded") @PathVariable("videoId") long videoId) throws VideoNotFoundException {
+                                 @Parameter(description = "video where the comment will be uploaded") @PathVariable("videoId") String videoId) throws VideoNotFoundException {
         Optional<Video> video = videoRepository.findById(videoId);
         if(!video.isPresent()){
             throw new VideoNotFoundException();
@@ -105,7 +105,7 @@ public class CommentController {
     @PutMapping("/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateComment(@Parameter(description = "data of comment to be updated") @RequestBody @Valid Comment comment,
-                            @Parameter(description = "id of comment to be updated") @PathVariable("commentId") long commentId) throws CommentNotFoundException {
+                            @Parameter(description = "id of comment to be updated") @PathVariable("commentId") String commentId) throws CommentNotFoundException {
         Optional<Comment> commentData = commentRepository.findById(commentId);
         if(!commentData.isPresent()){
             throw new CommentNotFoundException();
@@ -123,7 +123,7 @@ public class CommentController {
     @Operation(summary = "Delete a Comment by Id", description = "Delete a Comment object by specifying its Id", tags = {"comments", "delete"})
     @DeleteMapping("/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteComment(@Parameter(description = "id of comment to be deleted") @PathVariable("commentId") long commentId) {
+    public void deleteComment(@Parameter(description = "id of comment to be deleted") @PathVariable("commentId") String commentId) {
         if (commentRepository.existsById(commentId)) {
             commentRepository.deleteById(commentId);
         }

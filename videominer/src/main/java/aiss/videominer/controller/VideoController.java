@@ -41,13 +41,13 @@ public class VideoController {
     @ApiResponses({
             @ApiResponse(responseCode= "200", description = "Video obtenido",
                     content = {@Content(schema = @Schema(implementation = Video.class), mediaType = "application/json")}),
-            @ApiResponse(responseCode = "404", description = "Video no encontrado")
+            @ApiResponse(responseCode = "404", description = "Video no encontrado", content = {@Content(schema = @Schema())})
     })
     @Operation(summary = "Retrieve a Video",
-            description = "Get a Video object by specifying its Id",tags = {"get","video"})
+            description = "Get a Video object by specifying its Id",tags = {"get","videos"})
     @GetMapping("/videos/{videoId}")
     public Video findOne(@Parameter(description = "id from video to be searched")
-                                               @PathVariable(value="videoId") long videoId) throws VideoNotFoundException {
+                                               @PathVariable(value="videoId") String videoId) throws VideoNotFoundException {
         Optional<Video> video = videoRepository.findById(videoId);
         if(!video.isPresent()){
             throw new VideoNotFoundException();
@@ -60,10 +60,10 @@ public class VideoController {
     @ApiResponse(responseCode = "404", description = "Canal no encontrado", content = {@Content(schema = @Schema())})
     })
     @Operation(summary = "Retrieve all Videos from Channel",
-            description = "Get a list of all Video objects from an Channel object by specifying its Id",tags = {"get","videos","channel"})
+            description = "Get a list of all Video objects from an Channel object by specifying its Id",tags = {"get","videos","channels"})
     @GetMapping("/channels/{channelId}/videos")
     public List<Video> getAllVideosByChannelId(@Parameter(description = "id from channel whose videos needs to be listed")
-                                                @PathVariable(value="channelId") long channelId) throws ChannelNotFoundException {
+                                                @PathVariable(value="channelId") String channelId) throws ChannelNotFoundException {
         Optional<Channel> channel = channelRepository.findById(channelId);
         if(!channel.isPresent()){
             throw new ChannelNotFoundException();
@@ -77,11 +77,11 @@ public class VideoController {
             @ApiResponse(responseCode = "404", description = "Canal no encontrado", content = {@Content(schema = @Schema())}),
             @ApiResponse(responseCode = "400", description = "Datos inválidos", content = {@Content(schema = @Schema())})
     })
-    @Operation(summary = "Create a Channel Video", description = "Create a Video object by its attributes in a Channelr object by specifying its Id", tags = {"channel","videos","post"})
+    @Operation(summary = "Create a Channel Video", description = "Create a Video object by its attributes in a Channel object by specifying its Id", tags = {"channels","videos","post"})
     @PostMapping("/channels/{channelId}/videos)")
     @ResponseStatus(HttpStatus.CREATED)
     public Video createVideo(@Parameter(description = "data of video to be created")@RequestBody @Valid Video video,
-                             @Parameter(description = "channel where the video will be uploaded") @PathVariable("channelId") long channelId) throws ChannelNotFoundException {
+                             @Parameter(description = "channel where the video will be uploaded") @PathVariable("channelId") String channelId) throws ChannelNotFoundException {
         Optional<Channel> channel = channelRepository.findById(channelId);
         if(!channel.isPresent()){
             throw new ChannelNotFoundException();
@@ -100,7 +100,7 @@ public class VideoController {
     @PutMapping("/videos/{videoId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateVideo(@Parameter(description = "data of video to be updated")@RequestBody @Valid Video video,
-                            @Parameter(description = "id of video to be updated") @PathVariable("videoId") long videoId)
+                            @Parameter(description = "id of video to be updated") @PathVariable("videoId") String videoId)
                             throws VideoNotFoundException{
     Optional<Video> videoData = videoRepository.findById(videoId);
     if(!videoData.isPresent()){
@@ -122,7 +122,7 @@ public class VideoController {
     @Operation(summary = "Delete a Video by Id", description = "Delete a Video object by specifying its Id", tags = {"videos", "delete"})
     @DeleteMapping("/videos/{videoId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteVideo(@Parameter(description = "id of video to be deleted") @PathVariable("videoId") long videoId){
+    public void deleteVideo(@Parameter(description = "id of video to be deleted") @PathVariable("videoId") String videoId){
         if(videoRepository.existsById(videoId)){
             videoRepository.deleteById(videoId);
         }
