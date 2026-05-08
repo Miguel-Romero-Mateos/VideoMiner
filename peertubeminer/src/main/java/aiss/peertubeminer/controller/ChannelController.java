@@ -5,10 +5,7 @@ import aiss.peertubeminer.model.peertube.Caption;
 import aiss.peertubeminer.model.peertube.Comment;
 import aiss.peertubeminer.model.peertube.Video;
 import aiss.peertubeminer.model.videominer.Channel;
-import aiss.peertubeminer.service.CaptionService;
-import aiss.peertubeminer.service.ChannelService;
-import aiss.peertubeminer.service.CommentService;
-import aiss.peertubeminer.service.VideoService;
+import aiss.peertubeminer.service.PeertubeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -22,16 +19,7 @@ import java.util.List;
 public class ChannelController {
 
     @Autowired
-    private ChannelService channelService;
-
-    @Autowired
-    private VideoService videoService;
-
-    @Autowired
-    private CaptionService captionService;
-
-    @Autowired
-    private CommentService commentService;
+    private PeertubeService peertubeService;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -60,7 +48,7 @@ public class ChannelController {
 
     // POST
     @PostMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     public Channel sendChannel(
             @PathVariable String id,
             @RequestParam(required = false) Integer maxVideos,
@@ -79,10 +67,10 @@ public class ChannelController {
     private Channel buildVmChannel(String channelId, int maxVideos, int maxComments) {
 
         aiss.peertubeminer.model.peertube.Channel ptChannel =
-                channelService.getChannel(channelId);
+                peertubeService.getChannel(channelId);
         Channel vmChannel = Transformer.transformChannel(ptChannel);
 
-        List<Video> ptVideos = videoService.getVideosByChannel(channelId, maxVideos);
+        List<Video> ptVideos = peertubeService.getVideosByChannel(channelId, maxVideos);
 
         for (Video ptVideo : ptVideos) {
 
@@ -91,11 +79,11 @@ public class ChannelController {
 
             String uuid = ptVideo.getUuid();
 
-            List<Caption> ptCaptions = captionService.getCaptionsByVideo(uuid);
+            List<Caption> ptCaptions = peertubeService.getCaptionsByVideo(uuid);
             vmVideo.setCaptions(Transformer.transformCaptions(ptCaptions, uuid));
 
 
-            List<Comment> ptComments = commentService.getCommentsByVideo(uuid, maxComments);
+            List<Comment> ptComments = peertubeService.getCommentsByVideo(uuid, maxComments);
             vmVideo.setComments(Transformer.transformComments(ptComments));
 
             vmChannel.getVideos().add(vmVideo);

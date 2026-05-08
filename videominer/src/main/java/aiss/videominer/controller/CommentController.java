@@ -83,7 +83,7 @@ public class CommentController {
             @ApiResponse(responseCode = "400", description = "Datos inválidos", content = {@Content(schema = @Schema())})
     })
     @Operation(summary = "Create a Video Comment", description = "Create a Comment object by its attributes in a Video object by specifying its Id", tags = {"comments", "videos", "post"})
-    @PostMapping("/videos/{videoId}/comments)")
+    @PostMapping("/videos/{videoId}/comments")
     @ResponseStatus(HttpStatus.CREATED)
     public Comment createComment(@Parameter(description = "data of comment to be created") @RequestBody @Valid Comment comment,
                                  @Parameter(description = "video where the comment will be uploaded") @PathVariable("videoId") String videoId) throws VideoNotFoundException {
