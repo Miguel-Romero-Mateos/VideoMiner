@@ -83,7 +83,7 @@ public class CaptionController {
             @ApiResponse(responseCode = "400", description = "Datos inválidos", content = {@Content(schema = @Schema())})
     })
     @Operation(summary = "Create a Video Caption", description = "Create a Caption object by its attributes in a Video object by specifying its Id", tags = {"captions", "videos", "post"})
-    @PostMapping("/videos/{videoId}/captions)")
+    @PostMapping("/videos/{videoId}/captions")
     @ResponseStatus(HttpStatus.CREATED)
     public Caption createCaption(@Parameter(description = "data of caption to be created") @RequestBody @Valid Caption caption,
                                  @Parameter(description = "video where the caption will be uploaded") @PathVariable("videoId") String videoId) throws VideoNotFoundException {

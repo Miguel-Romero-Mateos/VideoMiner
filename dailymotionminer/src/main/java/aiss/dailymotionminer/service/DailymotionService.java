@@ -2,71 +2,177 @@ package aiss.dailymotionminer.service;
 
 import aiss.dailymotionminer.model.dailymotion.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class DailymotionService {
 
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
+
+    @Value("${dailymotionminer.baseuri}")
+    private String baseUri;
 
     public Channel getChannel(String userId) {
-        Channel channel = null;
-        String uri = "https://api.dailymotion.com/user/" + userId + "?fields=id,nickname,description,created_time";
+        String uri = baseUri + "/user/" + userId
+                + "?fields=id,nickname,description,created_time";
+
         try {
-            channel = restTemplate.getForObject(uri, Channel.class);
+            return restTemplate.getForObject(uri, Channel.class);
+
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Dailymotion channel not found: " + userId,
+                    e
+            );
+
+        } catch (HttpClientErrorException.BadRequest e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Dailymotion channel not found or invalid: " + userId,
+                    e
+            );
+
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "Error retrieving Dailymotion channel: " + userId,
+                    e
+            );
         }
-        return channel;
     }
 
-    public VideoContainer getListVideos(String userId, Integer maxVideos) {
-        VideoContainer videoContainer = null;
-        if (maxVideos == null) {
+    public List<Video> getListVideos(String userId, Integer maxVideos, Integer maxPages) {
+
+        if (maxVideos == null || maxVideos <= 0) {
             maxVideos = 10;
         }
-        String uri = "https://api.dailymotion.com/user/" + userId
-                + "/videos?fields=id,title,description,uploaded_time&limit=" + maxVideos;
-        try {
-            videoContainer = restTemplate.getForObject(uri, VideoContainer.class);
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        if (maxPages == null || maxPages <= 0) {
+            maxPages = 2;
         }
-        return videoContainer;
+
+        List<Video> allVideos = new ArrayList<>();
+
+        for (int page = 1; page <= maxPages; page++) {
+
+            String uri = baseUri + "/user/" + userId + "/videos"
+                    + "?fields=id,title,description,uploaded_time"
+                    + "&limit=" + maxVideos
+                    + "&page=" + page;
+
+            try {
+                VideoContainer videoContainer = restTemplate.getForObject(uri, VideoContainer.class);
+
+                if (videoContainer == null
+                        || videoContainer.getList() == null
+                        || videoContainer.getList().isEmpty()) {
+                    break;
+                }
+
+                allVideos.addAll(videoContainer.getList());
+
+                if (videoContainer.getHasMore() != null && !videoContainer.getHasMore()) {
+                    break;
+                }
+
+            } catch (HttpClientErrorException.NotFound e) {
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Dailymotion videos not found for channel: " + userId,
+                        e
+                );
+
+            } catch (HttpClientErrorException.BadRequest e) {
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Dailymotion channel not found or invalid: " + userId,
+                        e
+                );
+
+            } catch (Exception e) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_GATEWAY,
+                        "Error retrieving Dailymotion videos for channel: " + userId,
+                        e
+                );
+            }
+        }
+
+        return allVideos;
     }
 
     public User getUser(String userId) {
-        User user = null;
-        String uri = "https://api.dailymotion.com/user/" + userId + "?fields=id,nickname,url,avatar_60_url";
+        String uri = baseUri + "/user/" + userId
+                + "?fields=id,nickname,url,avatar_60_url";
+
         try {
-            user = restTemplate.getForObject(uri, User.class);
+            return restTemplate.getForObject(uri, User.class);
+
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Dailymotion user not found: " + userId,
+                    e
+            );
+
+        } catch (HttpClientErrorException.BadRequest e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Dailymotion user not found or invalid: " + userId,
+                    e
+            );
+
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "Error retrieving Dailymotion user: " + userId,
+                    e
+            );
         }
-        return user;
     }
 
     public Tag getTags(String videoId) {
-        Tag tags = null;
-        String uri = "https://api.dailymotion.com/video/" + videoId + "?fields=tags";
+        String uri = baseUri + "/video/" + videoId + "?fields=tags";
+
         try {
-            tags = restTemplate.getForObject(uri, Tag.class);
+            return restTemplate.getForObject(uri, Tag.class);
+
+        } catch (HttpClientErrorException.NotFound e) {
+            return null;
+
+        } catch (HttpClientErrorException.BadRequest e) {
+            return null;
+
         } catch (Exception e) {
-            e.printStackTrace();
+            return null;
         }
-        return tags;
     }
 
     public SubtitleContainer getSubtitles(String videoId) {
-        SubtitleContainer subtitles = null;
-        String uri = "https://api.dailymotion.com/video/" + videoId + "/subtitles?fields=id,language_label,url";
+        String uri = baseUri + "/video/" + videoId
+                + "/subtitles?fields=id,language_label,url";
+
         try {
-            subtitles = restTemplate.getForObject(uri, SubtitleContainer.class);
+            return restTemplate.getForObject(uri, SubtitleContainer.class);
+
+        } catch (HttpClientErrorException.NotFound e) {
+            return null;
+
+        } catch (HttpClientErrorException.BadRequest e) {
+            return null;
+
         } catch (Exception e) {
-            e.printStackTrace();
+            return null;
         }
-        return subtitles;
     }
 }
